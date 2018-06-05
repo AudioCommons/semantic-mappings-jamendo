@@ -1,0 +1,25 @@
+PREFIX ac: <http://audiocommons.org/ns/audiocommons#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX iter: <http://w3id.org/sparql-generate/iter/>
+PREFIX fn: <http://w3id.org/sparql-generate/fn/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>                
+GENERATE { 
+  ?audioCol rdf:type ac:AudioCollection .
+  ?audioCol ac:memberNode ?node .
+  ?node ac:nodeContent ?audioClip . 
+  ?audioClip dc:title ?ttitle
+}
+SOURCE ?searchURI AS ?source
+ITERATOR iter:JSONPath(?source,"$..results[*]") AS ?res
+ITERATOR iter:JSONPath(?source,"$..results[*].tracks[*]") AS ?track
+WHERE {
+  BIND(fn:JSONPath(?res, "id") AS ?id)
+  BIND(fn:JSONPath(?res, "type") AS ?type)
+  BIND(fn:JSONPath(?res, "title[0]") AS ?title)  
+  BIND(IRI(CONCAT("http://www.jamendo.com/list/p", ?id)) AS ?audioCol)
+  
+  BIND(fn:JSONPath(?track, "id") AS ?tid)
+  BIND(fn:JSONPath(?track, "name") AS ?ttitle)
+  BIND(IRI(CONCAT("http://www.jamendo.com/track/", ?tid)) AS ?audioClip)
+  BIND(BNODE() as ?node)
+}
