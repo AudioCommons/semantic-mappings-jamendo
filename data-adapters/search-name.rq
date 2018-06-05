@@ -1,0 +1,27 @@
+PREFIX ac: <http://audiocommons.org/ns/audiocommons#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX iter: <http://w3id.org/sparql-generate/iter/>
+PREFIX fn: <http://w3id.org/sparql-generate/fn/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>                
+PREFIX cc: <http://creativecommons.org/ns#>
+PREFIX http: <http://www.w3.org/2011/http#>
+GENERATE { 
+  ?audioClip rdf:type ac:AudioClip .
+  ?audioClip dc:title ?title .
+  ?audioClip cc:license ?license .
+  ?audioClip ac:compiled ?artistURI .
+  ?audioClip ac:available_as ?audioFile .
+  ?audioFile rdf:type ac:AudioFile
+}
+SOURCE ?searchURI AS ?source
+ITERATOR iter:JSONPath(?source,"$..results[*]") AS ?res
+WHERE {
+  BIND(fn:JSONPath(?res, "id") AS ?id)
+  BIND(IRI(fn:JSONPath(?res, "shareurl")) AS ?audioClip)  
+  BIND(fn:JSONPath(?res, "name") AS ?title)  
+  BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
+  BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?audioFile)  
+  BIND(fn:JSONPath(?res, "artist_id") AS ?artist_id)
+  BIND(iri(CONCAT("http://www.jamendo.com/artist/", ?artist_id)) as ?artistURI)
+  
+}
