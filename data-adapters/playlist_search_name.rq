@@ -1,0 +1,22 @@
+PREFIX ac: <http://audiocommons.org/ns/audiocommons#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX iter: <http://w3id.org/sparql-generate/iter/>
+PREFIX fn: <http://w3id.org/sparql-generate/fn/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>                
+PREFIX cc: <http://creativecommons.org/ns#>
+PREFIX http: <http://www.w3.org/2011/http#>
+GENERATE { 
+    ?audioCol rdf:type ac:AudioCollection .
+    ?audioCol dc:title ?title .
+    ?audioCol ac:compiled ?userURI .
+}
+SOURCE ?searchURI AS ?source
+ITERATOR iter:JSONPath(?source,"$..results[*]") AS ?res
+WHERE {
+  BIND(fn:JSONPath(?res, "id") AS ?id)
+  BIND(IRI(fn:JSONPath(?res, "shareurl")) AS ?audioCol)  
+  BIND(fn:JSONPath(?res, "name") AS ?title)  
+  BIND(fn:JSONPath(?res, "user_id") AS ?user_id)
+  BIND(iri(CONCAT("http://www.jamendo.com/user/", ?user_id)) as ?artistURI)
+  
+} LIMIT 100
