@@ -10,7 +10,7 @@ GENERATE {
     ?audioCol dc:title ?title .
     ?audioCol ac:compiled ?userURI .
 }
-SOURCE ?searchURI AS ?source
+SOURCE <https://api.jamendo.com/v3.0/playlists/?client_id=$token&format=json&namesearch=$pattern> AS ?source
 ITERATOR iter:JSONPath(?source,"$..results[*]") AS ?res
 WHERE {
   BIND(fn:JSONPath(?res, "id") AS ?id)
@@ -18,5 +18,4 @@ WHERE {
   BIND(fn:JSONPath(?res, "name") AS ?title)  
   BIND(fn:JSONPath(?res, "user_id") AS ?user_id)
   BIND(iri(CONCAT("http://www.jamendo.com/user/", ?user_id)) as ?artistURI)
-  
-} LIMIT 100
+}
