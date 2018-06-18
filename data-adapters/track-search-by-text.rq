@@ -5,13 +5,20 @@ PREFIX fn: <http://w3id.org/sparql-generate/fn/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>                
 PREFIX cc: <http://creativecommons.org/ns#>
 PREFIX http: <http://www.w3.org/2011/http#>
-GENERATE { 
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+GENERATE {
   ?audioClip rdf:type ac:AudioClip .
   ?audioClip dc:title ?title .
   ?audioClip cc:license ?license .
   ?audioClip ac:compiled ?artistURI .
   ?audioClip ac:available_as ?audioFile .
-  ?audioFile rdf:type ac:AudioFile
+  ?audioFile rdf:type ac:AudioFile .
+  ?audioClip rdf:type prov:Entity .
+  <http://jamendo.com> rdf:type prov:Agent .
+  <http://jamendo.com> rdf:type foaf:Organization .
+  <http://jamendo.com> foaf:name "Jamendo" .
+  ?audioClip prov:wasAttributedTo <http://jamendo.com>
 }
 SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&namesearch=$pattern> AS ?source
 ITERATOR iter:JSONPath(?source,"$..results[*]") AS ?res
