@@ -20,7 +20,7 @@ GENERATE {
   <http://jamendo.com> foaf:name "Jamendo" .
   ?audioClip prov:wasAttributedTo <http://jamendo.com>
 }
-SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&namesearch=$pattern> AS ?source
+SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&search=$pattern> AS ?source
 ITERATOR iter:JSONPath(?source,"$..results[*]") AS ?res
 WHERE {
   BIND(fn:JSONPath(?res, "id") AS ?id)
