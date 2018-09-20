@@ -26,20 +26,39 @@ GENERATE {
       ac:memberNode ?audioCollectionNode ;
       ac:nodeCount ?nodeCount .
 
-  ?audioCollectionNode
-      a ac:AudioCollectionNode ;
-      ac:nodeIndex ?index ;
-      ac:nodeContent ?audioClip .
+  GENERATE {
+    ?audioCollection ac:memberNode ?audioCollectionNode .
 
-  ?audioClip
-      rdf:type ac:AudioClip ;
-      dc:title ?title ;
-      cc:license ?license ;
-      ac:compiled ?artistURI ;
-      ac:available_as ?audioFile ;
-      rdf:type prov:Entity ;
-      prov:wasAttributedTo <http://jamendo.com> .
-  ?audioFile rdf:type ac:AudioFile .
+    ?audioCollectionNode
+        a ac:AudioCollectionNode ;
+        ac:nodeIndex ?index ;
+        ac:nodeContent ?audioClip .
+
+    ?audioClip
+        rdf:type ac:AudioClip ;
+        dc:title ?title ;
+        cc:license ?license ;
+        ac:compiled ?artistURI ;
+        ac:available_as ?audioFile ;
+        rdf:type prov:Entity ;
+        prov:wasAttributedTo <http://jamendo.com> .
+    ?audioFile rdf:type ac:AudioFile .
+  }
+  ITERATOR iter:JSONElement(?source,"$.results[*]") AS ?resIterator
+  WHERE {
+    BIND(BNODE() AS ?audioCollectionNode)
+    BIND(fn:JSONPath(?resIterator, "element") AS ?res)
+    BIND(fn:JSONPath(?resIterator, "position") AS ?indexFromZero)
+    BIND(?indexFromZero + 1 AS ?index)
+
+    BIND(IRI(fn:JSONPath(?res, "shareurl")) AS ?audioClip)
+    BIND(fn:JSONPath(?res, "name") AS ?title)
+    BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
+    BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?audioFile)
+    BIND(fn:JSONPath(?res, "artist_id") AS ?artist_id)
+    BIND(iri(CONCAT("http://www.jamendo.com/artist/", ?artist_id)) as ?artistURI)
+  } .
+
 }
 SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&search=$pattern> AS ?source
 ITERATOR iter:JSONElement(?source,"$.results[*]") AS ?resIterator
@@ -49,15 +68,4 @@ WHERE {
       BIND(BNODE() AS ?audioCollection)
     }
   }
-  BIND(BNODE() AS ?audioCollectionNode)
-  BIND(fn:JSONPath(?resIterator, "element") AS ?res)
-  BIND(fn:JSONPath(?resIterator, "position") AS ?indexFromZero)
-  BIND(?indexFromZero + 1 AS ?index)
-
-  BIND(IRI(fn:JSONPath(?res, "shareurl")) AS ?audioClip)
-  BIND(fn:JSONPath(?res, "name") AS ?title)
-  BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
-  BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?audioFile)
-  BIND(fn:JSONPath(?res, "artist_id") AS ?artist_id)
-  BIND(iri(CONCAT("http://www.jamendo.com/artist/", ?artist_id)) as ?artistURI)
 }
