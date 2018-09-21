@@ -53,7 +53,7 @@ GENERATE {
         prov:wasAttributedTo <http://jamendo.com> .
     ?audioFile rdf:type ac:AudioFile .
   }
-  ITERATOR iter:JSONElement(?source,"$.results[*]") AS ?resIterator
+  ITERATOR iter:JSONElement(?source,"results[*]") AS ?resIterator
   WHERE {
     BIND(BNODE() AS ?audioCollectionNode)
     BIND(fn:JSONPath(?resIterator, "element") AS ?res)
@@ -72,17 +72,17 @@ GENERATE {
 SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&search=$pattern> AS ?source
 WHERE {
   BIND(BNODE() AS ?searchAction)
-  BIND(fn:JSONPath(?source, "$.headers.status") AS ?statusTxt)
+  BIND(fn:JSONPath(?source, "headers.status") AS ?statusTxt)
   BIND(IF(?statusTxt = "success", schema:CompletedActionStatus, schema:FailedActionStatus) AS ?actionStatus)
   OPTIONAL {
-  	BIND(BNODE() AS ?audioCollection).
+  	BIND(BNODE() AS ?audioCollection) .
     FILTER(?statusTxt = "success")
   }
   OPTIONAL {
-  	BIND(BNODE() AS ?error).
-    BIND(fn:JSONPath(?source, "$.headers.code") AS ?errorCode).
-    BIND(fn:JSONPath(?source, "$.headers.error_message") AS ?errorMessage).
+  	BIND(BNODE() AS ?error) .
     FILTER(?statusTxt = "failed")
   }
+  BIND(fn:JSONPath(?source, "headers.code") AS ?errorCode) .
+  BIND(fn:JSONPath(?source, "headers.error_message") AS ?errorMessage)  .
   BIND(NOW() AS ?endTime)
 }
