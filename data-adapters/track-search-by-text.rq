@@ -12,7 +12,7 @@ PREFIX schema: <http://schema.org/>
 
 GENERATE {
   <http://jamendo.com>
-      rdf:type prov:Agent, foaf:Organization ;
+      rdf:type foaf:Organization ; # prov:Agent,
       foaf:name "Jamendo" .
 
   ?searchAction
@@ -26,8 +26,8 @@ GENERATE {
       schema:error ?error .
 
   ?audioCollection
-      rdf:type ac:AudioCollection, prov:Entity ;
-      prov:wasAttributedTo <http://jamendo.com> ;
+      rdf:type ac:AudioCollection; #, prov:Entity ;
+      # prov:wasAttributedTo <http://jamendo.com> ;
       ac:memberNode ?audioCollectionNode ;
       ac:nodeCount ?nodeCount .
 
@@ -49,9 +49,9 @@ GENERATE {
         dc:title ?title ;
         cc:license ?license ;
         ac:compiled ?artistURI ;
-        ac:available_as ?audioFile ;
-        rdf:type prov:Entity ;
-        prov:wasAttributedTo <http://jamendo.com> .
+        ac:available_as ?audioFile .
+        # rdf:type prov:Entity .
+        # prov:wasAttributedTo <http://jamendo.com> .
     ?audioFile rdf:type ac:AudioFile .
   }
   ITERATOR iter:JSONElement(?source,"results[*]") AS ?resIterator
