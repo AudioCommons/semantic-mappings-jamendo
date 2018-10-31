@@ -104,7 +104,7 @@ GENERATE {
       BIND(BNODE() AS ?defaultContainerNode).
       FILTER(BOUND(?albumId))
     }
-    BIND(IRI(CONCAT(STR(jamendo-albums:), ?albumId)) AS ?artist)
+    BIND(IRI(CONCAT(STR(jamendo-albums:), ?albumId)) AS ?parentCollection)
     BIND(fn:JSONPath(?res, "position") AS ?position)
 
     BIND(fn:JSONPath(?res, "image") AS ?imageUrl)
