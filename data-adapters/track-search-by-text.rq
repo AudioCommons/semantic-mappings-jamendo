@@ -10,6 +10,17 @@ PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX schema: <http://schema.org/>
 
+PREFIX jamendo-tracks: <https://w3id.org/audiocommons/services/jamendo/tracks/>
+PREFIX jamendo-artists: <https://w3id.org/audiocommons/services/jamendo/artists/>
+PREFIX jamendo-albums: <https://w3id.org/audiocommons/services/jamendo/albums/>
+PREFIX jamendo-tags: <https://w3id.org/audiocommons/services/jamendo/tags/>
+PREFIX jamendo-tags-genres: <https://w3id.org/audiocommons/services/jamendo/tags/genres/>
+PREFIX jamendo-tags-instruments: <https://w3id.org/audiocommons/services/jamendo/tags/instruments/>
+PREFIX jamendo-tags-vartags: <https://w3id.org/audiocommons/services/jamendo/tags/vartags/>
+
+# TODO add tag mapping
+# TODO evaluate if mapping properties of ?artist and ?parentCollection (album)
+
 GENERATE {
   <http://jamendo.com>
       rdf:type foaf:Organization ; # prov:Agent,
@@ -46,13 +57,31 @@ GENERATE {
 
     ?audioClip
         rdf:type ac:AudioClip ;
-        dc:title ?title ;
+        dc:title ?name ;
+        ac:author ?artist ;
+        ac:image ?image ;
+        ac:duration ?duration ;
         cc:license ?license ;
-        ac:compiled ?artistURI ;
-        ac:available_as ?audioFile .
-        # rdf:type prov:Entity .
-        # prov:wasAttributedTo <http://jamendo.com> .
-    ?audioFile rdf:type ac:AudioFile .
+        ac:defaultContainerNode ?defaultContainerNode ;
+        ac:originalFile _:originalAudioFile ;
+        ac:available_as _:originalAudioFile.
+
+    _:originalAudioFile
+        a ebu:MediaResource;
+        ebu:locator ?originalAudioFileUrl.
+
+    ?defaultContainerNode
+        a ac:AudioCollectionNode;
+        ac:nodeIndex ?position.
+
+    ?parentCollection
+        a ac:AudioCollection ;
+        ac:memberNode ?defaultContainerNode .
+
+    ?image
+        a ebu:Picture;
+        ebu:locator ?imageUrl.
+
   }
   ITERATOR iter:JSONElement(?source,"results[*]") AS ?resIterator
   WHERE {
@@ -61,12 +90,28 @@ GENERATE {
     BIND(fn:JSONPath(?resIterator, "position") AS ?indexFromZero)
     BIND(?indexFromZero + 1 AS ?index)
 
-    BIND(IRI(fn:JSONPath(?res, "shareurl")) AS ?audioClip)
-    BIND(fn:JSONPath(?res, "name") AS ?title)
+    BIND(IRI(CONCAT(STR(jamendo-tracks:), STR(fn:JSONPath(?res, "id")))) AS ?audioClip)
+    BIND(fn:JSONPath(?res, "name") AS ?name)
+    BIND(fn:JSONPath(?res, "duration") * 1000 AS ?duration)
     BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
-    BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?audioFile)
-    BIND(fn:JSONPath(?res, "artist_id") AS ?artist_id)
-    BIND(iri(CONCAT("http://www.jamendo.com/artist/", ?artist_id)) as ?artistURI)
+
+    BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?originalAudioFileUrl)
+    BIND(IRI(CONCAT(STR(jamendo-artists:), fn:JSONPath(?res, "artist_id"))) AS ?artist)
+
+    BIND(fn:JSONPath(?res, "album_id") AS ?albumId)
+    OPTIONAL {
+      BIND(BNODE() AS ?defaultContainerNode).
+      FILTER(BOUND(?albumId))
+    }
+    BIND(IRI(CONCAT(STR(jamendo-albums:), ?albumId)) AS ?artist)
+    BIND(fn:JSONPath(?res, "position") AS ?position)
+
+    BIND(fn:JSONPath(?res, "image") AS ?imageUrl)
+    OPTIONAL {
+      BIND(BNODE() AS ?image).
+      FILTER(BOUND(?imageUrl))
+    }
+
   } .
 
 }
