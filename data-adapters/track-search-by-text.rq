@@ -18,6 +18,7 @@ PREFIX jamendo-tags: <https://w3id.org/audiocommons/services/jamendo/tags/>
 PREFIX jamendo-tags-genres: <https://w3id.org/audiocommons/services/jamendo/tags/genres/>
 PREFIX jamendo-tags-instruments: <https://w3id.org/audiocommons/services/jamendo/tags/instruments/>
 PREFIX jamendo-tags-vartags: <https://w3id.org/audiocommons/services/jamendo/tags/vartags/>
+PREFIX jamendo-error-types: <https://w3id.org/audiocommons/services/jamendo/error-types/>
 
 # TODO add tag mapping
 # TODO evaluate if mapping properties of ?artist and ?parentCollection (album)
@@ -44,8 +45,7 @@ GENERATE {
       ac:nodeCount ?nodeCount .
 
   ?error
-      dc:identifier ?errorCode ;
-      schema:identifier ?errorCode ;
+      a ?errorType ;
       rdfs:label ?errorMessage .
 
   GENERATE {
@@ -130,6 +130,7 @@ WHERE {
     FILTER(?statusTxt = "failed")
   }
   BIND(fn:JSONPath(?source, "headers.code") AS ?errorCode) .
+  BIND(IRI(CONCAT(STR(jamendo-error-types:), STR(?errorCode))) AS ?errorType) .
   BIND(fn:JSONPath(?source, "headers.error_message") AS ?errorMessage)  .
   BIND(NOW() AS ?endTime)
 }
