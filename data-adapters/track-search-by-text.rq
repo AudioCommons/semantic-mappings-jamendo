@@ -11,6 +11,7 @@ PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX schema: <http://schema.org/>
 PREFIX ebu: <http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#>
+PREFIX mo: <http://purl.org/ontology/mo/>
 
 PREFIX jamendo-tracks: <https://w3id.org/audiocommons/services/jamendo/tracks/>
 PREFIX jamendo-artists: <https://w3id.org/audiocommons/services/jamendo/artists/>
@@ -21,7 +22,6 @@ PREFIX jamendo-tags-instruments: <https://w3id.org/audiocommons/services/jamendo
 PREFIX jamendo-tags-vartags: <https://w3id.org/audiocommons/services/jamendo/tags/vartags/>
 PREFIX jamendo-error-types: <https://w3id.org/audiocommons/services/jamendo/error-types/>
 
-# TODO add tag mapping
 # TODO evaluate if mapping properties of ?artist and ?parentCollection (album)
 
 GENERATE {
@@ -66,7 +66,7 @@ GENERATE {
         cc:license ?license ;
         ac:defaultContainerNode ?defaultContainerNode ;
         ac:originalFile _:originalAudioFile .
-#        ac:available_as _:originalAudioFile.
+#        ac:availableAs _:originalAudioFile.
 
     _:originalAudioFile
         a ebu:MediaResource;
@@ -83,6 +83,27 @@ GENERATE {
     ?image
         a ebu:Picture;
         ebu:locator ?imageUrl.
+
+    GENERATE {?audioClip ac:audioCategory ?category}
+  	ITERATOR iter:JSONPath(?res, "musicinfo.tags.vartags[*]") AS ?tag
+  	WHERE {
+        BIND(STR(?tag) AS ?tagStr)
+        BIND(IRI(CONCAT(STR(jamendo-tags-vartags:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
+  	} .
+
+    GENERATE {?audioClip mo:genre ?category}
+  	ITERATOR iter:JSONPath(?res, "musicinfo.tags.genres[*]") AS ?tag
+  	WHERE {
+        BIND(STR(?tag) AS ?tagStr)
+        BIND(IRI(CONCAT(STR(jamendo-tags-genres:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
+  	} .
+
+    GENERATE {?audioClip mo:instrument ?category}
+  	ITERATOR iter:JSONPath(?res, "musicinfo.tags.instruments[*]") AS ?tag
+  	WHERE {
+        BIND(STR(?tag) AS ?tagStr)
+        BIND(IRI(CONCAT(STR(jamendo-tags-instruments:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
+  	} .
 
   }
   ITERATOR iter:JSONElement(?source,"results[*]") AS ?resIterator
@@ -117,7 +138,7 @@ GENERATE {
   } .
 
 }
-SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&search=$pattern> AS ?source
+SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&search=$pattern&include=musicinfo> AS ?source
 WHERE {
   BIND(BNODE() AS ?searchAction)
   BIND(fn:JSONPath(?source, "headers.status") AS ?statusTxt)
