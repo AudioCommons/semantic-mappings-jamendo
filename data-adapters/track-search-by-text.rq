@@ -107,7 +107,7 @@ GENERATE {
     BIND(IRI(CONCAT(STR(jamendo-albums:), ?albumId)) AS ?parentCollection)
     BIND(fn:JSONPath(?res, "position") AS ?position)
 
-    BIND(fn:JSONPath(?res, "image") AS ?imageUrl)
+    BIND(IRI(fn:JSONPath(?res, "image")) AS ?imageUrl)
     OPTIONAL {
       BIND(BNODE() AS ?image).
       FILTER(BOUND(?imageUrl))
