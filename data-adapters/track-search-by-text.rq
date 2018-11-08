@@ -4,6 +4,7 @@ PREFIX iter: <http://w3id.org/sparql-generate/iter/>
 PREFIX fn: <http://w3id.org/sparql-generate/fn/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX cc: <http://creativecommons.org/ns#>
 PREFIX http: <http://www.w3.org/2011/http#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
@@ -93,7 +94,7 @@ GENERATE {
 
     BIND(IRI(CONCAT(STR(jamendo-tracks:), STR(fn:JSONPath(?res, "id")))) AS ?audioClip)
     BIND(fn:JSONPath(?res, "name") AS ?name)
-    BIND(fn:JSONPath(?res, "duration") * 1000 AS ?duration)
+    BIND(xsd:float(fn:JSONPath(?res, "duration") * 1000) AS ?duration)
     BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
 
     BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?originalAudioFileUrl)
