@@ -64,8 +64,8 @@ GENERATE {
         ac:duration ?duration ;
         cc:license ?license ;
         ac:defaultContainerNode ?defaultContainerNode ;
-        ac:originalFile _:originalAudioFile ;
-        ac:available_as _:originalAudioFile.
+        ac:originalFile _:originalAudioFile .
+#        ac:available_as _:originalAudioFile.
 
     _:originalAudioFile
         a ebu:MediaResource;
