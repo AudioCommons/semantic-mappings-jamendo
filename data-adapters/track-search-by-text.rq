@@ -27,9 +27,9 @@ PREFIX jamendo-tags-instruments: <https://w3id.org/audiocommons/services/jamendo
 PREFIX jamendo-tags-vartags: <https://w3id.org/audiocommons/services/jamendo/tags/vartags/>
 PREFIX jamendo-error-types: <https://w3id.org/audiocommons/services/jamendo/error-types/>
 
-PREFFIX jamendo-audio-mp3: <https://mp3d.jamendo.com/download/track/>
-PREFFIX jamendo-audio-ogg: <https://ogg.jamendo.com/download/track/>
-PREFFIX jamendo-audio-flac: <https://flac.jamendo.com/download/track/>
+PREFIX jamendo-audio-mp3: <https://mp3d.jamendo.com/download/track/>
+PREFIX jamendo-audio-ogg: <https://ogg.jamendo.com/download/track/>
+PREFIX jamendo-audio-flac: <https://flac.jamendo.com/download/track/>
 
 # TODO evaluate if mapping properties of ?artist and ?parentCollection (album)
 
