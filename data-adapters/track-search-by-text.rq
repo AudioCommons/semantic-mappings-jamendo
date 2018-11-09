@@ -13,6 +13,11 @@ PREFIX schema: <http://schema.org/>
 PREFIX ebu: <http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#>
 PREFIX mo: <http://purl.org/ontology/mo/>
 
+PREFIX encoding_mp3: <http://www.ebu.ch/metadata/ontologies/skos/ebu_AudioCompressionCodeCS#_8.4>
+PREFIX encoding_ogg: <http://www.ebu.ch/metadata/ontologies/skos/ebu_AudioCompressionCodeCS#_26>
+PREFIX encoding_wav: <http://www.ebu.ch/metadata/ontologies/skos/ebu_AudioCompressionCodeCS#_28>
+PREFIX encoding_flac: <http://www.ebu.ch/metadata/ontologies/skos/ebu_AudioCompressionCodeCS#_22>
+
 PREFIX jamendo-tracks: <https://w3id.org/audiocommons/services/jamendo/tracks/>
 PREFIX jamendo-artists: <https://w3id.org/audiocommons/services/jamendo/artists/>
 PREFIX jamendo-albums: <https://w3id.org/audiocommons/services/jamendo/albums/>
@@ -21,6 +26,10 @@ PREFIX jamendo-tags-genres: <https://w3id.org/audiocommons/services/jamendo/tags
 PREFIX jamendo-tags-instruments: <https://w3id.org/audiocommons/services/jamendo/tags/instruments/>
 PREFIX jamendo-tags-vartags: <https://w3id.org/audiocommons/services/jamendo/tags/vartags/>
 PREFIX jamendo-error-types: <https://w3id.org/audiocommons/services/jamendo/error-types/>
+
+PREFFIX jamendo-audio-mp3: <https://mp3d.jamendo.com/download/track/>
+PREFFIX jamendo-audio-ogg: <https://ogg.jamendo.com/download/track/>
+PREFFIX jamendo-audio-flac: <https://flac.jamendo.com/download/track/>
 
 # TODO evaluate if mapping properties of ?artist and ?parentCollection (album)
 
@@ -65,12 +74,32 @@ GENERATE {
         ac:duration ?duration ;
         cc:license ?license ;
         ac:defaultContainerNode ?defaultContainerNode ;
-        ac:originalFile _:originalAudioFile .
-#        ac:availableAs _:originalAudioFile.
+#        ac:originalFile _:originalAudioFile .
+        ac:availableAs _:audioFileOgg, _:audioFileFlac, _:audioFileHqMp3.
 
-    _:originalAudioFile
-        a ac:AudioFile;
-        ebu:locator ?originalAudioFileUrl.
+    _:audioFileOgg
+        a ac:AudioFile; #, schema:AudioObject ;
+        ebu:locator ?audioFileOggUrl ; # or ma:locator or schema:contentUrl
+        ebu:hasAudioEncodingFormat encoding_ogg: .
+
+    _:audioFileFlac
+        a ac:AudioFile; #, schema:AudioObject ;
+        ebu:locator ?audioFileFlacUrl ; # or ma:locator or schema:contentUrl
+        ebu:hasAudioEncodingFormat encoding_flac: .
+
+#    _:audioFileLqMp3
+#        a ac:AudioFile; #, schema:AudioObject ;
+#        ebu:locator ?audioFileLqMp3Url ; # or ma:locator or schema:contentUrl
+#        ebu:bitRate 96000; # 64 kbps
+#        ebu:hasAudioEncodingFormat encoding_mp3: ;
+#        ebu:audioChannelNumber ?signalChannels ;
+#        ebu:sampleSize ?signalBitsPerSample ;
+#        ebu:sampleRate ?signalSampleRate .
+
+    _:audioFileHqMp3
+        a ac:AudioFile; #, schema:AudioObject ;
+        ebu:locator ?audioFileHqMp3Url ; # or ma:locator or schema:contentUrl
+        ebu:hasAudioEncodingFormat encoding_mp3: .
 
     ?defaultContainerNode
         a ac:AudioCollectionNode;
@@ -113,7 +142,8 @@ GENERATE {
     BIND(fn:JSONPath(?resIterator, "position") AS ?indexFromZero)
     BIND(?indexFromZero + 1 AS ?index)
 
-    BIND(IRI(CONCAT(STR(jamendo-tracks:), STR(fn:JSONPath(?res, "id")))) AS ?audioClip)
+    BIND(STR(fn:JSONPath(?res, "id")) AS ?jamendoId)
+    BIND(IRI(CONCAT(STR(jamendo-tracks:), ?jamendoId)) AS ?audioClip)
     BIND(fn:JSONPath(?res, "name") AS ?name)
     BIND(xsd:float(fn:JSONPath(?res, "duration") * 1000) AS ?duration)
     BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
@@ -134,6 +164,10 @@ GENERATE {
       BIND(BNODE() AS ?image).
       FILTER(BOUND(?imageUrl))
     }
+
+    BIND(IRI(CONCAT(STR(jamendo-audio-mp3:), ?jamendoId, '/mp32/')) AS ?audioFileHqMp3Url)
+    BIND(IRI(CONCAT(STR(jamendo-audio-ogg:), ?jamendoId, '/ogg1/')) AS ?audioFileOggUrl)
+    BIND(IRI(CONCAT(STR(jamendo-audio-flac:), ?jamendoId, '/flac/')) AS ?audioFileFlacUrl)
 
   } .
 
