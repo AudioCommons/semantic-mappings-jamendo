@@ -31,162 +31,175 @@ PREFIX jamendo-audio-mp3: <https://mp3d.jamendo.com/download/track/>
 PREFIX jamendo-audio-ogg: <https://ogg.jamendo.com/download/track/>
 PREFIX jamendo-audio-flac: <https://flac.jamendo.com/download/track/>
 
+PREFIX jamendo-api: <https://api.jamendo.com/v3.0/>
+
 # TODO evaluate if mapping properties of ?artist and ?parentCollection (album)
 
 GENERATE {
-  <http://jamendo.com>
-      rdf:type foaf:Organization ; # prov:Agent,
-      foaf:name "Jamendo" .
-
-  ?searchAction
-      a schema:SearchAction ;
-      schema:object <http://jamendo.com> ;
-      schema:query "$pattern" ;
-      schema:startTime $startTime;
-      schema:endTime ?endTime;
-      schema:actionStatus ?actionStatus;
-      schema:result ?audioCollection ;
-      schema:error ?error .
-
-  ?audioCollection
-      rdf:type ac:AudioCollection; #, prov:Entity ;
-      # prov:wasAttributedTo <http://jamendo.com> ;
-      ac:memberNode ?audioCollectionNode ;
-      ac:nodeCount ?nodeCount .
-
-  ?error
-      a ?errorType ;
-      rdfs:label ?errorMessage .
 
   GENERATE {
-    ?audioCollection ac:memberNode ?audioCollectionNode .
+    <http://jamendo.com>
+        rdf:type foaf:Organization ; # prov:Agent,
+        foaf:name "Jamendo" .
 
-    ?audioCollectionNode
-        a ac:AudioCollectionNode ;
-        ac:nodeIndex ?index ;
-        ac:nodeContent ?audioClip .
+    ?searchAction
+        a schema:SearchAction ;
+        schema:object <http://jamendo.com> ;
+        schema:query "$pattern" ;
+        schema:startTime $startTime;
+        schema:endTime ?endTime;
+        schema:actionStatus ?actionStatus;
+        schema:result ?audioCollection ;
+        schema:error ?error .
 
-    ?audioClip
-        rdf:type ac:AudioClip ;
-        dc:title ?name ;
-        ac:author ?artist ;
-        ac:image ?image ;
-        ac:duration ?duration ;
-        cc:license ?license ;
-        ac:defaultContainerNode ?defaultContainerNode ;
-#        ac:originalFile _:originalAudioFile .
-        ac:availableAs _:audioFileOgg, _:audioFileFlac, _:audioFileHqMp3.
+    ?audioCollection
+        rdf:type ac:AudioCollection; #, prov:Entity ;
+        # prov:wasAttributedTo <http://jamendo.com> ;
+        ac:memberNode ?audioCollectionNode ;
+        ac:nodeCount ?nodeCount .
 
-    _:audioFileOgg
-        a ac:AudioFile; #, schema:AudioObject ;
-        ebu:locator ?audioFileOggUrl ; # or ma:locator or schema:contentUrl
-        ebu:hasAudioEncodingFormat encoding_ogg: .
+    ?error
+        a ?errorType ;
+        rdfs:label ?errorMessage .
 
-    _:audioFileFlac
-        a ac:AudioFile; #, schema:AudioObject ;
-        ebu:locator ?audioFileFlacUrl ; # or ma:locator or schema:contentUrl
-        ebu:hasAudioEncodingFormat encoding_flac: .
+    GENERATE {
+      ?audioCollection ac:memberNode ?audioCollectionNode .
 
-#    _:audioFileLqMp3
-#        a ac:AudioFile; #, schema:AudioObject ;
-#        ebu:locator ?audioFileLqMp3Url ; # or ma:locator or schema:contentUrl
-#        ebu:bitRate 96000; # 64 kbps
-#        ebu:hasAudioEncodingFormat encoding_mp3: ;
-#        ebu:audioChannelNumber ?signalChannels ;
-#        ebu:sampleSize ?signalBitsPerSample ;
-#        ebu:sampleRate ?signalSampleRate .
+      ?audioCollectionNode
+          a ac:AudioCollectionNode ;
+          ac:nodeIndex ?index ;
+          ac:nodeContent ?audioClip .
 
-    _:audioFileHqMp3
-        a ac:AudioFile; #, schema:AudioObject ;
-        ebu:locator ?audioFileHqMp3Url ; # or ma:locator or schema:contentUrl
-        ebu:hasAudioEncodingFormat encoding_mp3: .
+      ?audioClip
+          rdf:type ac:AudioClip ;
+          dc:title ?name ;
+          ac:author ?artist ;
+          ac:image ?image ;
+          ac:duration ?duration ;
+          cc:license ?license ;
+          ac:defaultContainerNode ?defaultContainerNode ;
+  #        ac:originalFile _:originalAudioFile .
+          ac:availableAs _:audioFileOgg, _:audioFileFlac, _:audioFileHqMp3.
 
-    ?defaultContainerNode
-        a ac:AudioCollectionNode;
-        ac:nodeIndex ?position.
+      _:audioFileOgg
+          a ac:AudioFile; #, schema:AudioObject ;
+          ebu:locator ?audioFileOggUrl ; # or ma:locator or schema:contentUrl
+          ebu:hasAudioEncodingFormat encoding_ogg: .
 
-    ?parentCollection
-        a ac:AudioCollection ;
-        ac:memberNode ?defaultContainerNode .
+      _:audioFileFlac
+          a ac:AudioFile; #, schema:AudioObject ;
+          ebu:locator ?audioFileFlacUrl ; # or ma:locator or schema:contentUrl
+          ebu:hasAudioEncodingFormat encoding_flac: .
 
-    ?image
-        a ebu:Picture;
-        ebu:locator ?imageUrl.
+  #    _:audioFileLqMp3
+  #        a ac:AudioFile; #, schema:AudioObject ;
+  #        ebu:locator ?audioFileLqMp3Url ; # or ma:locator or schema:contentUrl
+  #        ebu:bitRate 96000; # 64 kbps
+  #        ebu:hasAudioEncodingFormat encoding_mp3: ;
+  #        ebu:audioChannelNumber ?signalChannels ;
+  #        ebu:sampleSize ?signalBitsPerSample ;
+  #        ebu:sampleRate ?signalSampleRate .
 
-    GENERATE {?audioClip ac:audioCategory ?category}
-  	ITERATOR iter:JSONPath(?res, "musicinfo.tags.vartags[*]") AS ?tag
-  	WHERE {
-        BIND(STR(?tag) AS ?tagStr)
-        BIND(IRI(CONCAT(STR(jamendo-tags-vartags:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
-  	} .
+      _:audioFileHqMp3
+          a ac:AudioFile; #, schema:AudioObject ;
+          ebu:locator ?audioFileHqMp3Url ; # or ma:locator or schema:contentUrl
+          ebu:hasAudioEncodingFormat encoding_mp3: .
 
-    GENERATE {?audioClip mo:genre ?category}
-  	ITERATOR iter:JSONPath(?res, "musicinfo.tags.genres[*]") AS ?tag
-  	WHERE {
-        BIND(STR(?tag) AS ?tagStr)
-        BIND(IRI(CONCAT(STR(jamendo-tags-genres:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
-  	} .
+      ?defaultContainerNode
+          a ac:AudioCollectionNode;
+          ac:nodeIndex ?position.
 
-    GENERATE {?audioClip mo:instrument ?category}
-  	ITERATOR iter:JSONPath(?res, "musicinfo.tags.instruments[*]") AS ?tag
-  	WHERE {
-        BIND(STR(?tag) AS ?tagStr)
-        BIND(IRI(CONCAT(STR(jamendo-tags-instruments:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
-  	} .
+      ?parentCollection
+          a ac:AudioCollection ;
+          ac:memberNode ?defaultContainerNode .
+
+      ?image
+          a ebu:Picture;
+          ebu:locator ?imageUrl.
+
+      GENERATE {?audioClip ac:audioCategory ?category}
+    	ITERATOR iter:JSONPath(?res, "musicinfo.tags.vartags[*]") AS ?tag
+    	WHERE {
+          BIND(STR(?tag) AS ?tagStr)
+          BIND(IRI(CONCAT(STR(jamendo-tags-vartags:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
+    	} .
+
+      GENERATE {?audioClip mo:genre ?category}
+    	ITERATOR iter:JSONPath(?res, "musicinfo.tags.genres[*]") AS ?tag
+    	WHERE {
+          BIND(STR(?tag) AS ?tagStr)
+          BIND(IRI(CONCAT(STR(jamendo-tags-genres:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
+    	} .
+
+      GENERATE {?audioClip mo:instrument ?category}
+    	ITERATOR iter:JSONPath(?res, "musicinfo.tags.instruments[*]") AS ?tag
+    	WHERE {
+          BIND(STR(?tag) AS ?tagStr)
+          BIND(IRI(CONCAT(STR(jamendo-tags-instruments:), SUBSTR(?tagStr, 2, STRLEN(?tagStr) - 2))) AS ?category)
+    	} .
+
+    }
+    ITERATOR iter:JSONElement(?source,"results[*]") AS ?resIterator
+    WHERE {
+      BIND(BNODE() AS ?audioCollectionNode)
+      BIND(fn:JSONPath(?resIterator, "element") AS ?res)
+      BIND(fn:JSONPath(?resIterator, "position") AS ?indexFromZero)
+      BIND(?indexFromZero + 1 AS ?index)
+
+      BIND(STR(fn:JSONPath(?res, "id")) AS ?jamendoId)
+      BIND(IRI(CONCAT(STR(jamendo-tracks:), ?jamendoId)) AS ?audioClip)
+      BIND(fn:JSONPath(?res, "name") AS ?name)
+      BIND(xsd:float(fn:JSONPath(?res, "duration") * 1000) AS ?duration)
+      BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
+
+      BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?originalAudioFileUrl)
+      BIND(IRI(CONCAT(STR(jamendo-artists:), fn:JSONPath(?res, "artist_id"))) AS ?artist)
+
+      BIND(fn:JSONPath(?res, "album_id") AS ?albumId)
+      OPTIONAL {
+        BIND(BNODE() AS ?defaultContainerNode).
+        FILTER(BOUND(?albumId))
+      }
+      BIND(IRI(CONCAT(STR(jamendo-albums:), ?albumId)) AS ?parentCollection)
+      BIND(fn:JSONPath(?res, "position") AS ?position)
+
+      BIND(IRI(fn:JSONPath(?res, "image")) AS ?imageUrl)
+      OPTIONAL {
+        BIND(BNODE() AS ?image).
+        FILTER(BOUND(?imageUrl))
+      }
+
+      BIND(IRI(CONCAT(STR(jamendo-audio-mp3:), ?jamendoId, '/mp32/')) AS ?audioFileHqMp3Url)
+      BIND(IRI(CONCAT(STR(jamendo-audio-ogg:), ?jamendoId, '/ogg1/')) AS ?audioFileOggUrl)
+      BIND(IRI(CONCAT(STR(jamendo-audio-flac:), ?jamendoId, '/flac/')) AS ?audioFileFlacUrl)
+
+    } .
 
   }
-  ITERATOR iter:JSONElement(?source,"results[*]") AS ?resIterator
+  SOURCE ?serviceCall AS ?source
   WHERE {
-    BIND(BNODE() AS ?audioCollectionNode)
-    BIND(fn:JSONPath(?resIterator, "element") AS ?res)
-    BIND(fn:JSONPath(?resIterator, "position") AS ?indexFromZero)
-    BIND(?indexFromZero + 1 AS ?index)
-
-    BIND(STR(fn:JSONPath(?res, "id")) AS ?jamendoId)
-    BIND(IRI(CONCAT(STR(jamendo-tracks:), ?jamendoId)) AS ?audioClip)
-    BIND(fn:JSONPath(?res, "name") AS ?name)
-    BIND(xsd:float(fn:JSONPath(?res, "duration") * 1000) AS ?duration)
-    BIND(iri(fn:JSONPath(?res, "license_ccurl")) as ?license)
-
-    BIND(IRI(fn:JSONPath(?res, "audiodownload")) AS ?originalAudioFileUrl)
-    BIND(IRI(CONCAT(STR(jamendo-artists:), fn:JSONPath(?res, "artist_id"))) AS ?artist)
-
-    BIND(fn:JSONPath(?res, "album_id") AS ?albumId)
+    BIND(BNODE() AS ?searchAction)
+    BIND(fn:JSONPath(?source, "headers.status") AS ?statusTxt)
+    BIND(IF(?statusTxt = "success", schema:CompletedActionStatus, schema:FailedActionStatus) AS ?actionStatus)
     OPTIONAL {
-      BIND(BNODE() AS ?defaultContainerNode).
-      FILTER(BOUND(?albumId))
+    	BIND(BNODE() AS ?audioCollection) .
+      FILTER(?statusTxt = "success")
     }
-    BIND(IRI(CONCAT(STR(jamendo-albums:), ?albumId)) AS ?parentCollection)
-    BIND(fn:JSONPath(?res, "position") AS ?position)
-
-    BIND(IRI(fn:JSONPath(?res, "image")) AS ?imageUrl)
     OPTIONAL {
-      BIND(BNODE() AS ?image).
-      FILTER(BOUND(?imageUrl))
+    	BIND(BNODE() AS ?error) .
+      FILTER(?statusTxt = "failed")
     }
-
-    BIND(IRI(CONCAT(STR(jamendo-audio-mp3:), ?jamendoId, '/mp32/')) AS ?audioFileHqMp3Url)
-    BIND(IRI(CONCAT(STR(jamendo-audio-ogg:), ?jamendoId, '/ogg1/')) AS ?audioFileOggUrl)
-    BIND(IRI(CONCAT(STR(jamendo-audio-flac:), ?jamendoId, '/flac/')) AS ?audioFileFlacUrl)
-
+    BIND(fn:JSONPath(?source, "headers.code") AS ?errorCode) .
+    BIND(IRI(CONCAT(STR(jamendo-error-types:), STR(?errorCode))) AS ?errorType) .
+    BIND(fn:JSONPath(?source, "headers.error_message") AS ?errorMessage)  .
+    BIND(NOW() AS ?endTime)
   } .
-
 }
-SOURCE <https://api.jamendo.com/v3.0/tracks/?client_id=$token&format=json&search=$pattern&include=musicinfo> AS ?source
 WHERE {
-  BIND(BNODE() AS ?searchAction)
-  BIND(fn:JSONPath(?source, "headers.status") AS ?statusTxt)
-  BIND(IF(?statusTxt = "success", schema:CompletedActionStatus, schema:FailedActionStatus) AS ?actionStatus)
-  OPTIONAL {
-  	BIND(BNODE() AS ?audioCollection) .
-    FILTER(?statusTxt = "success")
-  }
-  OPTIONAL {
-  	BIND(BNODE() AS ?error) .
-    FILTER(?statusTxt = "failed")
-  }
-  BIND(fn:JSONPath(?source, "headers.code") AS ?errorCode) .
-  BIND(IRI(CONCAT(STR(jamendo-error-types:), STR(?errorCode))) AS ?errorType) .
-  BIND(fn:JSONPath(?source, "headers.error_message") AS ?errorMessage)  .
-  BIND(NOW() AS ?endTime)
+  BIND(IRI(CONCAT(
+      STR(jamendo-api:), "tracks/",
+      "?client_id=", ENCODE_FOR_URI($token),
+      "&format=json",
+      "&include=musicinfo",
+      "&search=", ENCODE_FOR_URI($pattern) )) AS ?serviceCall)
 }
