@@ -201,5 +201,7 @@ WHERE {
       "?client_id=", ENCODE_FOR_URI($token),
       "&format=json",
       "&include=musicinfo",
-      "&search=", ENCODE_FOR_URI($pattern) )) AS ?serviceCall)
+      "&search=", ENCODE_FOR_URI($pattern),
+      IF(BOUND($limit), CONCAT("&limit=", ENCODE_FOR_URI(STR($limit))),"")
+  )) AS ?serviceCall)
 }
