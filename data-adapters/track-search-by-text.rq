@@ -202,6 +202,7 @@ WHERE {
       "&format=json",
       "&include=musicinfo",
       "&search=", ENCODE_FOR_URI($pattern),
-      IF(BOUND($limit), CONCAT("&limit=", ENCODE_FOR_URI(STR($limit))),"")
+      IF(BOUND($limit), CONCAT("&limit=", ENCODE_FOR_URI(STR($limit))),""),
+      IF(BOUND($page), CONCAT("&offset=", ENCODE_FOR_URI(STR($limit * ($page - 1) + 1))),"")
   )) AS ?serviceCall)
 }
